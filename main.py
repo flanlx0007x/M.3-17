@@ -80,24 +80,34 @@ async def long_task(ctx: nextcord.Interaction):
 
     await ctx.followup.send("✅ งานเสร็จแล้ว!")  # ตอบกลับภายหลัง
 # ======== คำสั่งของบอท ========
+history = {}  # เก็บประวัติของแต่ละผู้ใช้
+
 @bot.slash_command(name="ask", description="ถามคำถามและให้ AI ตอบ โดยจะใช้ประวัติการสนทนา")
 async def ask(ctx, *, query: str = None):
     await ctx.response.defer()
     if not query:
-        await ctx.send("กรุณาระบุคำถามที่ต้องการถาม เช่น `!ask <คำถาม>`")
+        await ctx.send("กรุณาระบุคำถามที่ต้องการถาม เช่น `/ask <คำถาม>`")
         return
+
+    user_id = ctx.user.id  # ใช้ ID ของผู้ใช้แต่ละคน
+    if user_id not in history:
+        history[user_id] = []  # ถ้ายังไม่มี ให้สร้างใหม่
 
     if is_url(query):
         page_content = get_text_from_url(query)
         if "เกิดข้อผิดพลาด" in page_content:
-            await ctx.send(page_content)  
+            await ctx.send(page_content)
             return
         query = f"ข้อมูลจากเว็บไซต์:\n{page_content}"
 
     try:
-        chat_session = model.start_chat(history=[])
+        chat_session = model.start_chat(history=history[user_id])  # ใช้ประวัติของผู้ใช้
         response = chat_session.send_message(query)
         ai_response = response.text
+
+        # อัปเดตประวัติของผู้ใช้
+        history[user_id].append({"role": "user", "parts": [query]})
+        history[user_id].append({"role": "model", "parts": [ai_response]})
 
         await send_long_message(ctx, ai_response)
 
