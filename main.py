@@ -8,6 +8,8 @@ from bs4 import BeautifulSoup
 import re
 import json
 import asyncio
+from keep_alive import keep_alive
+keep_alive()
 # ======== ตั้งค่าตัวแปร API ========
 
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
