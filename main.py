@@ -284,9 +284,9 @@ async def unc(ctx):
 
 @bot.slash_command(name="img", description="ค้นหารูปภาพจาก Google")
 async def img(ctx, *, query: str = None):
-    await ctx.response.defer()
+    await ctx.response.defer()  # สั่งบอทให้เตรียมตัวตอบกลับ
     if not query:
-        await ctx.send("กรุณาระบุคำค้นหา เช่น `!img <คำค้นหา>`")
+        await ctx.send("กรุณาระบุคำค้นหา เช่น `/img <คำค้นหา>`")
         return
 
     try:
