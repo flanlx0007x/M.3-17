@@ -6,6 +6,7 @@ import google.generativeai as genai
 import requests
 from bs4 import BeautifulSoup
 import re
+import random
 import json
 import asyncio
 from keep_alive import keep_alive
