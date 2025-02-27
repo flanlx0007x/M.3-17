@@ -69,7 +69,18 @@ async def google_search(query):
 
 async def google_image_search(query):
     service = build("customsearch", "v1", developerKey=GOOGLE_API_KEY)
-    res = service.cse().list(q=query, cx=SEARCH_ENGINE_ID, searchType="image").execute()
+
+    start_index = random.randint(1, 10) * 10  # สุ่มหน้าผลลัพธ์
+
+    res = service.cse().list(
+        q=query,
+        cx=SEARCH_ENGINE_ID,
+        searchType="image",
+        num=5,
+        start=start_index,
+        dateRestrict="m1",
+    ).execute()
+
     return res.get("items", [])
 @bot.slash_command(name="long_task", description="ทำงานที่ใช้เวลานาน")
 async def long_task(ctx: nextcord.Interaction):
@@ -90,6 +101,8 @@ async def ask(ctx, *, query: str = None):
         return
 
     user_id = ctx.user.id  # ใช้ ID ของผู้ใช้แต่ละคน
+    username = ctx.user.name  # ดึงชื่อของผู้ใช้
+
     if user_id not in history:
         history[user_id] = []  # ถ้ายังไม่มี ให้สร้างใหม่
 
@@ -101,12 +114,15 @@ async def ask(ctx, *, query: str = None):
         query = f"ข้อมูลจากเว็บไซต์:\n{page_content}"
 
     try:
-        chat_session = model.start_chat(history=history[user_id])  # ใช้ประวัติของผู้ใช้
-        response = chat_session.send_message(query)
+        # ใส่ user_id และ username ในข้อความที่ส่งให้ AI
+        formatted_query = f"[User ID: {user_id}, Username: {username}] {query}"
+
+        chat_session = model.start_chat(history=history[user_id])
+        response = chat_session.send_message(formatted_query)
         ai_response = response.text
 
         # อัปเดตประวัติของผู้ใช้
-        history[user_id].append({"role": "user", "parts": [query]})
+        history[user_id].append({"role": "user", "parts": [formatted_query]})
         history[user_id].append({"role": "model", "parts": [ai_response]})
 
         await send_long_message(ctx, ai_response)
