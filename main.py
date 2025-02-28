@@ -130,51 +130,7 @@ async def ask(ctx, *, query: str = None):
 
     except Exception as e:
         await ctx.send(f"เกิดข้อผิดพลาด: {e}")
-current_model = 'gemini-2.0-pro-exp-02-05'  # ตั้งค่าโมเดลเริ่มต้น
 
-@bot.slash_command(name="deeptalk", description="ถามคำถามและให้ AI ตอบ โดยสามารถเปลี่ยนโมเดลได้")
-async def deeptalk(ctx, *, query: str = None, change_model: bool = False):
-    await ctx.response.defer()
-
-    if not query:
-        await ctx.send("กรุณาระบุคำถามที่ต้องการถาม เช่น `/deeptalk <คำถาม>`")
-        return
-
-    user_id = ctx.user.id  # ใช้ ID ของผู้ใช้แต่ละคน
-    username = ctx.user.name  # ดึงชื่อของผู้ใช้
-
-    if user_id not in history:
-        history[user_id] = []  # ถ้ายังไม่มี ให้สร้างใหม่
-
-    if change_model:  # ถ้ามีการเปลี่ยนโมเดล
-        global current_model
-        current_model = 'gemini-2.0-flash-thinking-exp-01-21'  # เปลี่ยนเป็นโมเดลใหม่
-        await ctx.send(f"ตอนนี้เปลี่ยนโมเดลในการคิดเป็น deep thinking-beta 1.78  แล้ว!")
-
-    if is_url(query):
-        page_content = get_text_from_url(query)
-        if "เกิดข้อผิดพลาด" in page_content:
-            await ctx.send(page_content)
-            return
-        query = f"ข้อมูลจากเว็บไซต์:\n{page_content}"
-
-    try:
-        # ใส่ user_id และ username ในข้อความที่ส่งให้ AI
-        formatted_query = f"[User ID: {user_id}, Username: {username}] {query}"
-
-        # เริ่มเซสชันด้วยโมเดลที่เลือก
-        chat_session = model.start_chat(model_name=current_model, history=history[user_id])
-        response = chat_session.send_message(formatted_query)
-        ai_response = response.text
-
-        # อัปเดตประวัติของผู้ใช้
-        history[user_id].append({"role": "user", "parts": [formatted_query]})
-        history[user_id].append({"role": "model", "parts": [ai_response]})
-
-        await send_long_message(ctx, ai_response)
-
-    except Exception as e:
-        await ctx.send(f"เกิดข้อผิดพลาด: {e}")
 @bot.slash_command(name="askurl", description="ดึงข้อมูลจาก URL และให้ AI ประมวลผล")
 async def askurl(ctx, *, url: str = None):
     await ctx.response.defer()
