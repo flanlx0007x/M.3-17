@@ -405,7 +405,7 @@ async def on_message(message):
     # หากเป็นข้อความของบอทเอง ให้ออกจากการตรวจสอบ
     if message.author == bot.user:
         return
-    await bot.change_presence(activity=nextcord.Game(name=" Coding..."))
+    await bot.change_presence(activity=nextcord.Game(name=" V2 comingsoon.."))
     # หากข้อความไม่ได้ส่งในเซิร์ฟเวอร์ (DM) ให้ข้าม
     if not message.guild:
         await bot.process_commands(message)
